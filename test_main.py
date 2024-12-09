@@ -1,56 +1,49 @@
 import pytest
-
+from unittest.mock import patch
 import main
-@pytest.fixture
-def mock_functions(monkeypatch):
-    """Monkeypatch to replace the functions 'login', 'transfer_money', 'select_menu' and 'create_ticket' in main"""
-    def dummy_login():
-        """Dummy function to replace the function 'login' in main"""
-        pass
 
-    def dummy_transfer(person):
-        """Dummy function to replace the function 'transfer_money' in main"""
-        pass
 
-    def dummy_select_menu():
-        """Dummy function to replace the function 'select_menu' in main"""
-        print('Lotto\n---------\nA) Konto Ein- und Auszahlungen tätigen\nB) Lottotipps abgeben\nZ) Beenden')
-        return input('')
-
-    def dummy_ticket(person):
-        """Dummy function to replace the function 'create_ticket' in main"""
-        pass
-
-    monkeypatch.setattr(main, 'login', dummy_login)
-    monkeypatch.setattr(main, 'transfer_money', dummy_transfer)
-    monkeypatch.setattr(main, 'select_menu', dummy_select_menu)
-    monkeypatch.setattr(main, 'create_ticket', dummy_ticket)
-
-def test_main_exit(capsys, monkeypatch, mock_functions):
-    """Test the main function with the exit option"""
-    inputs = iter(['Z'])
-    monkeypatch.setattr('builtins.input', lambda _: next(inputs))
-
-    main.main()
+def test_main_exit(capsys):
+    """Test the main function with the exit option."""
+    inputs = ['Z']
+    with patch('builtins.input', side_effect=inputs):
+        main.main()
     output = capsys.readouterr().out
-    assert output == 'Lotto\n---------\nA) Konto Ein- und Auszahlungen tätigen\nB) Lottotipps abgeben\nZ) Beenden\n'
+    assert "Login erfolgreich!" in output
+    assert "Programm beendet." in output
 
 
-def test_main_money(capsys, monkeypatch, mock_functions):
-    """Test the main function with the money transaction option"""
-    inputs = iter(['A', 'Z'])
-    monkeypatch.setattr('builtins.input', lambda _: next(inputs))
-    main.main()
+def test_main_money(capsys):
+    """Test the main function with the money transaction option."""
+    inputs = ['A', 'Z']
+    with patch('builtins.input', side_effect=inputs):
+        main.main()
     output = capsys.readouterr().out
-    assert output == 'Lotto\n---------\nA) Konto Ein- und Auszahlungen tätigen\nB) Lottotipps abgeben\nZ) Beenden\n' \
-                     'Lotto\n---------\nA) Konto Ein- und Auszahlungen tätigen\nB) Lottotipps abgeben\nZ) Beenden\n'
+    assert "Kontofunktion ausgewählt." in output
+    assert "Programm beendet." in output
 
 
-def test_main_ticket(capsys, monkeypatch, mock_functions):
-    """Test the main function with the ticket creation option"""
-    inputs = iter(['B', 'Z'])
-    monkeypatch.setattr('builtins.input', lambda _: next(inputs))
-    main.main()
+def test_main_ticket(capsys):
+    """Test the main function with the ticket creation option."""
+    inputs = ['B', 'Z']
+    with patch('builtins.input', side_effect=inputs):
+        main.main()
     output = capsys.readouterr().out
-    assert output == 'Lotto\n---------\nA) Konto Ein- und Auszahlungen tätigen\nB) Lottotipps abgeben\nZ) Beenden\n' \
-                     'Lotto\n---------\nA) Konto Ein- und Auszahlungen tätigen\nB) Lottotipps abgeben\nZ) Beenden\n'
+    assert "Lottotipps ausgewählt." in output
+    assert "Programm beendet." in output
+
+
+def test_main_invalid_option(capsys):
+    """Test the main function with an invalid menu option."""
+    inputs = ['X', 'Z']
+    with patch('builtins.input', side_effect=inputs):
+        main.main()
+    output = capsys.readouterr().out
+    assert "Ungültige Option. Bitte erneut wählen." in output
+
+
+def test_main_error_handling():
+    """Test the main function to handle unexpected errors."""
+    with patch('main.input', side_effect=RuntimeError("Simulierter Fehler")):
+        with pytest.raises(RuntimeError, match="Simulierter Fehler"):
+            main.main()

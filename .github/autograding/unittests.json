@@ -16,5 +16,17 @@
     "function": "test_main_ticket",
     "timeout": 10,
     "points": 1
+  },
+  {
+    "tests": [
+      {
+        "name": "Unittests",
+        "run": "pytest test_lottery_unit.py"
+      },
+      {
+        "name": "Integrationstests",
+        "run": "pytest test_lottery_integration.py"
+      }
+    ]
   }
 ]
